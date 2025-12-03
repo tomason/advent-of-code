@@ -12,10 +12,11 @@ public class Day03 {
 
         one = lines.stream()
             .mapToInt(Day03::highestJoltage)
-                .sum();
+            .sum();
 
         // 17332
         System.out.println("Part one: " + one);
+        System.out.println("Alt:      " + lines.stream().mapToLong(line -> highestJoltageAlternative(line, 2)).sum());
 
         var two = 0L;
 
@@ -25,6 +26,7 @@ public class Day03 {
 
         // 172516781546707
         System.out.println("Part two: " + two);
+        System.out.println("Alt:      " + lines.stream().mapToLong(line -> highestJoltageAlternative(line, 12)).sum());
     }
 
     public static int highestJoltage(String line) {
@@ -58,8 +60,8 @@ public class Day03 {
         Arrays.fill(result, 0);
 
         var lastIndex = 0;
-        for (int resultIndex = 0; resultIndex < result.length; resultIndex++) {
-            for (int i = lastIndex; i < digits.length - result.length + resultIndex + 1; i++) {
+        for (var resultIndex = 0; resultIndex < result.length; resultIndex++) {
+            for (var i = lastIndex; i < digits.length - result.length + resultIndex + 1; i++) {
                 if (result[resultIndex] < digits[i]) {
                     result[resultIndex] = digits[i];
                     // start on the next digit
@@ -69,6 +71,40 @@ public class Day03 {
                     // end early if 9 was found
                     break;
                 }
+            }
+        }
+
+        var resultNumber = 0L;
+        for (var digit : result) {
+            resultNumber = resultNumber * 10 + digit;
+        }
+
+        return resultNumber;
+    }
+
+    public static long highestJoltageAlternative(String line, int batteries) {
+        var digits = line.chars().map(character -> character - '0').toArray();
+        var result = new int[batteries];
+        Arrays.fill(result, 0);
+
+        var startingResultIndex = 0;
+        for (int i = 0; i < digits.length; i++) {
+            var resultIndex = startingResultIndex;
+            while (resultIndex < result.length) {
+                // digits.length - result.length + resultIndex + 1 - check that there are enough digits to fill up the result
+                if (i < digits.length - result.length + resultIndex + 1 && result[resultIndex] < digits[i]) {
+                    result[resultIndex] = digits[i];
+                    // reset the rest of digits
+                    Arrays.fill(result, resultIndex + 1, result.length, 0);
+
+                    if (result[resultIndex] == 9) {
+                        // no point in searching for higher number for this digit, start with the next one
+                        startingResultIndex = resultIndex + 1;
+                    }
+
+                    break;
+                }
+                resultIndex++;
             }
         }
 
